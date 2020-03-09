@@ -18,5 +18,13 @@
     <ClCompile Include="Crosses and Knots!.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gamerun.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="gamerun.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
