@@ -1,4 +1,3 @@
-﻿  Crosses and Knots!.cpp
-  gamerun.cpp
-  Generating Code...
+﻿  gamerun.cpp
+D:\Dev\Crosses-and-Knots\Crosses-and-Knots\Crosses and Knots!\gamerun.cpp(49,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   Crosses and Knots!.vcxproj -> D:\Dev\Crosses-and-Knots\Crosses-and-Knots\Crosses and Knots!\x64\Debug\Crosses and Knots!.exe

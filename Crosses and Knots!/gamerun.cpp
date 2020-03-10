@@ -28,12 +28,13 @@ For now, playing against PC will only result in a draw or loss for the player.
 
 */
 
-#include<iostream>
-#include<stdlib.h>
-#include<string>
-#include<stdio.h>
-#include<vector>
-#include<conio.h>
+#include <iostream>
+#include <stdlib.h>
+#include <time.h>
+#include <string>
+#include <stdio.h>
+#include <vector>
+#include <conio.h>
 #include <iomanip>
 #include <algorithm>
 #include <limits>
@@ -45,7 +46,8 @@ gamerun::gamerun()
 {
 	returnval();
 
-	player = 1;
+	srand(time(0));
+	
 	int b;
 	for (int i = 0; i < 3; i++)for (int j = 0; j < 3; j++) {
 
@@ -53,6 +55,12 @@ gamerun::gamerun()
 		board[i][j] = b;
 
 	}
+	
+
+	//Initialise variables
+	player = 1;
+	maxdepth = 99;
+	score = 0;
 
 	mainmenu();
 
@@ -152,6 +160,61 @@ void gamerun::returnval() {//changes the value of the boxes to their original on
 	mainmenu();
 }
 
+void gamerun::EasyAIGame()
+{
+	unsigned int turn = 0;
+
+	for (;;) {
+
+		system("cls");
+		mainscreen();
+
+		// human move
+		if (turn == 0)
+		{
+			getHumanMove();
+
+			if (HasWon(who::human))
+			{
+				system("cls");
+				mainscreen();
+				std::cout << "\n\n\nYou win?! IMPOSSIBLE!!!";
+				break;
+			}
+		}
+		else
+		{
+			std::cout << "\nComputer Move: ";
+
+			Move pcmove = GetRandomAIMove();
+			std::cout << pcmove.x << pcmove.y << "\n";
+			grid[pcmove.x][pcmove.y] = who::comp;
+
+			if (HasWon(who::comp))
+			{
+				system("cls");
+				mainscreen();
+				std::cout << "\n\n\nNot suprisingly, I win.";
+				break;
+			}
+		}
+
+		if (isTie())
+		{
+			system("cls");
+			mainscreen();
+			std::cout << "\n\nIt's a draw. How dull."; //if nobody wins
+
+			break;
+
+		}
+		turn ^= 1;
+	}
+
+	ending();
+
+}
+
 
 
 
@@ -159,19 +222,12 @@ void gamerun::mainmenu() {
 
 	system("cls");
 
-	std::cout << "\n\n\n\t\t\t\tCrosses and Knots! (V 1.6)\n\t\t\t\tBy Gokul Viswanath\n\n\n\n\t\t\t\tPLAY GAME (PRESS P)\n"
-		"\t\t\t\tCHOOSE OPPONENT (PRESS C)";
+	std::cout << "\n\n\n\t\t\t\tCrosses and Knots! (V 1.7)\n\t\t\t\tBy Gokul Viswanath\n\n\n\n\t\t\t\tPLAY GAME (PRESS P)\n";
 
 	char v = _getch();
 
 
-	if (v == 'p' || v == 'P') {
-
-		if (player == 1)multigame();
-		else if (player == 2)aigame();
-
-	}
-	else if (v == 'C' || v == 'c') {
+	if (v == 'p' || v == 'P'){
 
 		system("cls");
 
@@ -181,17 +237,31 @@ void gamerun::mainmenu() {
 		std::cout << "\n\t\t\t\tPC     (PRESS A)\t\t\t"; (player == 2) ? std::cout << "CURRENT" : std::cout << " ";
 
 		char w = _getch();
+		int diff;
 
-		if (w == 'H' || w == 'h')player = 1;
+		if (w == 'H' || w == 'h') {
+			player = 1;
+			multigame();
+		}
 		else if (w == 'A' || w == 'a') {
 
 			player = 2;
-			std::cout << "\n\n\t\t\tWARNING- Currently in V1.6, AI levels are not offered. The level will always be High \n\t\t\t"
-				"i.e you can only Draw or Lose.\n\t\t\t";
-			system("pause");
+			std::cout << "\n\tDifficulty?\n\t1.Easy\n\t2.Medium\n\t3.Hard\n\t4.Impossible\n\n\tEnter- ";
+
+			std::cin >> diff;		
+
+			if (diff == 1)EasyAIGame();
+			else if (diff == 2)maxdepth = 2;
+			else if (diff == 3)maxdepth = 4;
+			else if (diff == 4)maxdepth = std::numeric_limits<int>::max();
+			else {
+				mainmenu();
+			}
+			TougherAIGame();
 		}
-		mainmenu();
+		
 	}
+	
 	else mainmenu();
 }
 
@@ -222,7 +292,7 @@ bool gamerun::HasWon(who x)
 
 
 
-void gamerun::aigame() {
+void gamerun::TougherAIGame() {
 
 	unsigned int turn = 0;
 
@@ -280,61 +350,63 @@ void gamerun::aigame() {
 
 int gamerun::maxSearch(int level)
 {
-	if (HasWon(who::human)) {
-		return 10;
-	}
-	else if (HasWon(who::comp)) {
-		return -10;
-	}
-	else if (isTie()) {
-		return 0;
-	}
+	
+		if (HasWon(who::human)) {
+			return 10;
+		}
+		else if (HasWon(who::comp)) {
+			return -10;
+		}
+		else if (isTie()) {
+			return 0;
+		}
 
-	int score = std::numeric_limits<int>::min();
+		int score = std::numeric_limits<int>::min();
 
-	for (unsigned int i = 0; i < 3; i++)
-	{
-		for (unsigned int j = 0; j < 3; j++)
+		for (unsigned int i = 0; i < 3; i++)
 		{
-			if (grid[i][j] == who::empty)
+			for (unsigned int j = 0; j < 3; j++)
 			{
-				grid[i][j] = who::human;
-				score = std::max(score, minSearch(level + 1) - level);
-				grid[i][j] = who::empty;
+				if (grid[i][j] == who::empty)
+				{
+					grid[i][j] = who::human;
+					if (level < maxdepth)score = std::max(score, minSearch(level + 1) - level);
+					grid[i][j] = who::empty;
+				}
 			}
 		}
-	}
-
+	//}
 	return score;
 }
 
 int gamerun::minSearch(int level)
 {
-	if (HasWon(who::human)) {
-		return 10;
-	}
-	else if (HasWon(who::comp)) {
-		return -10;
-	}
-	else if (isTie()) {
-		return 0;
-	}
+	
+		if (HasWon(who::human)) {
+			return 10;
+		}
+		else if (HasWon(who::comp)) {
+			return -10;
+		}
+		else if (isTie()) {
+			return 0;
+		}
 
-	int score = std::numeric_limits<int>::max();
+		int score = std::numeric_limits<int>::max();
 
-	for (unsigned int i = 0; i < 3; i++)
-	{
-		for (unsigned int j = 0; j < 3; j++)
+		for (unsigned int i = 0; i < 3; i++)
 		{
-			if (grid[i][j] == who::empty)
+			for (unsigned int j = 0; j < 3; j++)
 			{
-				grid[i][j] = who::comp;
-				score = std::min(score, maxSearch(level + 1) + level);
-				grid[i][j] = who::empty;
+				if (grid[i][j] == who::empty)
+				{
+					grid[i][j] = who::comp;
+					if (level < maxdepth)score = std::min(score, maxSearch(level + 1) + level);
+					grid[i][j] = who::empty;
+				}
 			}
 		}
-	}
-
+	
 	return score;
 }
 
@@ -370,13 +442,28 @@ gamerun::Move gamerun::minimax()
 	return move;
 }
 
+gamerun::Move gamerun::GetRandomAIMove()
+{
+	Move AIMove;
+	while (true) {
+		int RandPosX = rand() % 3;
+		int RandPosY = rand() % 3;
+
+		if (grid[RandPosX][RandPosY] == who::empty) {
+			AIMove.x = RandPosX;
+			AIMove.y = RandPosY;
+
+			return AIMove;
+		}
+	}
+	
+}
+
 void gamerun::getHumanMove()
 {
 	bool fail = true;
 	unsigned int x = -1, y = -1;
 
-	do
-	{
 		std::cout << "\n\t\tEnter your move in coordinate form[row, col]. ex: 02\n\n\t\tYour Move- ";
 
 
@@ -386,7 +473,7 @@ void gamerun::getHumanMove()
 		std::cin >> p;
 		y = p - '0';
 
-		fail = grid[x][y] != who::empty;
+		//fail = grid[x][y] != who::empty;
 
 		std::cin.clear();
 		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -400,16 +487,19 @@ void gamerun::getHumanMove()
 			std::cin.clear();
 			std::cin.sync();
 			c -= 1;
-			continue;
+			getHumanMove();
 
 		}//if you select a place already taken.
 
 		else {
-			if (c % 2 == 0)grid[x][y] = who::human;//changes the values of the boxes as you enter X or O
-			else grid[x][y] = who::comp;
-		}//else
-
-	} while (fail);
+			if (player == 1) {
+				if (c % 2 == 0)grid[x][y] = who::human;
+				else grid[x][y] = who::comp;
+			}
+			else {
+				grid[x][y] = who::human;
+			}
+		}
 }
 
 

@@ -24,6 +24,7 @@ class gamerun
 	int c;
 	int player;
 	int score;
+	int maxdepth;
 
 	who grid[3][3];
 public:
@@ -33,10 +34,12 @@ public:
 	void mainscreen();
 	bool isTie();
 	void returnval();
-	void aigame();
+	void EasyAIGame();
+	void TougherAIGame();
 	bool HasWon(who x);
 	void mainmenu();
 	Move minimax();
+	Move GetRandomAIMove();
 	void getHumanMove();
 	int maxSearch(int level);
 	int minSearch(int level);
